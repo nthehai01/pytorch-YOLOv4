@@ -454,7 +454,9 @@ if  __name__ == "__main__":
 
         boxes = do_detect(model, sized, 0.5, n_classes,0.4, 1)
 
+        class_names = load_class_names(namesfile)
+
         file_name_split = file_name.split('.')
         file_name_split[-1] = 'txt'
         file_name = '.'.join(file_name_split)
-        save_prediction(img, boxes, file_name, pred_save_dir)
+        save_prediction(img, boxes, file_name, pred_save_dir, class_names)

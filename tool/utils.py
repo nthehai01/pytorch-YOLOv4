@@ -372,7 +372,7 @@ def plot_boxes(img, boxes, savename=None, class_names=None):
     return img
 
 
-def save_prediction(img, boxes, file_name, pred_save_dir):
+def save_prediction(img, boxes, file_name, pred_save_dir, class_names):
     width = img.width
     height = img.height
 
@@ -386,8 +386,9 @@ def save_prediction(img, boxes, file_name, pred_save_dir):
 
         cls_conf = box[5]
         cls_id = box[6]
+        class_name = class_names[cls_id]
             
-        pred = (cls_id, cls_conf, x1, y1, x2, y2)
+        pred = (class_name, cls_conf, x1, y1, x2, y2)
         pred = [str(i) for i in pred]
         content += " ".join(pred) + "\n"
 
