@@ -136,11 +136,11 @@ def image_data_augmentation(mat, w, h, pleft, ptop, swidth, sheight, flip, dhue,
         if dsat != 1 or dexp != 1 or dhue != 0:
             if img.shape[2] >= 3:
                 hsv_src = cv2.cvtColor(sized.astype(np.float32), cv2.COLOR_RGB2HSV)  # RGB to HSV
-                hsv = cv2.split(hsv_src)
-                hsv[1] *= dsat
-                hsv[2] *= dexp
-                hsv[0] += 179 * dhue
-                hsv_src = cv2.merge(hsv)
+                h_channel, s_channel, v_channel = cv2.split(hsv_src)
+                s_channel *= dsat
+                v_channel *= dexp
+                h_channel += 179 * dhue
+                hsv_src = cv2.merge((h_channel, s_channel, v_channel))
                 sized = np.clip(cv2.cvtColor(hsv_src, cv2.COLOR_HSV2RGB), 0, 255)  # HSV to RGB (the same as previous)
             else:
                 sized *= dexp
