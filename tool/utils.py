@@ -372,6 +372,31 @@ def plot_boxes(img, boxes, savename=None, class_names=None):
     return img
 
 
+def save_prediction(img, boxes, file_name, pred_save_dir):
+    width = img.width
+    height = img.height
+
+    content = ""
+    for i in range(len(boxes)):
+        box = boxes[i]
+        x1 = (box[0] - box[2] / 2.0) * width
+        y1 = (box[1] - box[3] / 2.0) * height
+        x2 = (box[0] + box[2] / 2.0) * width
+        y2 = (box[1] + box[3] / 2.0) * height
+
+        cls_conf = box[5]
+        cls_id = box[6]
+            
+        pred = (cls_id, cls_conf, x1, y1, x2, y2)
+        pred = [str(i) for i in pred]
+        content += " ".join(pred) + "\n"
+
+    dir = os.path.join(pred_save_dir, file_name)
+    f = open(dir, "w")
+    f.write(content)
+    f.close()
+
+
 def read_truths(lab_path):
     if not os.path.exists(lab_path):
         return np.array([])

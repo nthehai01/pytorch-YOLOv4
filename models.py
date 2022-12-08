@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
+from tqdm import tqdm
 
 
 class Mish(torch.nn.Module):
@@ -421,44 +422,39 @@ class Yolov4(nn.Module):
 
 if  __name__ == "__main__":
     import sys
+    import os
     from PIL import Image
 
-    namesfile = None
-    if len(sys.argv) == 4:
-        n_classes = int(sys.argv[1])
-        weightfile = sys.argv[2]
-        imgfile = sys.argv[3]
-    elif len(sys.argv) == 5:
-        n_classes = int(sys.argv[1])
-        weightfile = sys.argv[2]
-        imgfile = sys.argv[3]
-        namesfile = sys.argv[4]
-    else:
-        print('Usage: ')
-        print('  python models.py num_classes weightfile imgfile namefile')
+    n_classes = int(sys.argv[1])
+    weightfile = sys.argv[2]
+    img_dir = sys.argv[3]
+    pred_save_dir = sys.argv[4]
+    namesfile = sys.argv[5]
 
     model = Yolov4(n_classes=n_classes)
 
     pretrained_dict = torch.load(weightfile, map_location=torch.device('cuda'))
     model.load_state_dict(pretrained_dict)
 
-    if namesfile == None:
-        if n_classes == 20:
-            namesfile = 'data/voc.names'
-        elif n_classes == 80:
-            namesfile = 'data/coco.names'
-        else:
-            print("please give namefile")
+    model.cuda()
 
-    use_cuda = 1
-    if use_cuda:
-        model.cuda()
+    pred_save_dir = os.path.dirname(pred_save_dir)
 
-    img = Image.open(imgfile).convert('RGB')
-    sized = img.resize((608, 608))
-    from tool.utils import *
+    for imgfile in tqdm(os.listdir(img_dir)):
+        file_extension = imgfile.split('.')[-1]
+        if file_extension not in ['jpg', 'png', 'jpeg']:
+            continue
 
-    boxes = do_detect(model, sized, 0.5, n_classes,0.4, use_cuda)
+        file_name = imgfile
 
-    class_names = load_class_names(namesfile)
-    plot_boxes(img, boxes, 'predictions.jpg', class_names)
+        imgfile = os.path.join(img_dir, imgfile)
+        img = Image.open(imgfile).convert('RGB')
+        sized = img.resize((608, 608))
+        from tool.utils import *
+
+        boxes = do_detect(model, sized, 0.5, n_classes,0.4, 1)
+
+        file_name_split = file_name.split('.')
+        file_name_split[-1] = 'txt'
+        file_name = '.'.join(file_name_split)
+        save_prediction(img, boxes, file_name, pred_save_dir)
